@@ -49,7 +49,9 @@ const RecipeCard = ({ item, index, router }) => {
                 onPress={() => router.push({ pathname: '/recipeDetails', params: item })}
             >
                 <Image source={{ uri: item.strMealThumb }}
-                 style={[styles.imageContainer, { height: index % 3 === 0 ? hp(25) : hp(35) }]}  />
+                 style={[styles.imageContainer, { height: index % 3 === 0 ? hp(25) : hp(35) }]} 
+                  />
+                  {/* sharedTransitionTag={params.strMeal} */}
                 <Text style={styles.nameContaienr}>
                     {
                         item.strMeal.length > 20 ? item.strMeal.slice(0, 20) + '...' : item.strMeal

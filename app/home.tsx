@@ -33,8 +33,7 @@ const home = () => {
                 setCategores(response.data.categories)
             }
         } catch (error) {
-            console.log('error',err.message);
-            
+            console.log('error');
         }
     }
 
@@ -48,7 +47,7 @@ const home = () => {
                 setMeals(response.data.meals);
             }
         } catch (error) {
-            console.log('error',err.message);
+            console.log('error');
             
         }
     }

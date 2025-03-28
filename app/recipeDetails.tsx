@@ -2,11 +2,12 @@ import { View, Text, ScrollView, Image, StyleSheet, StatusBar, TouchableOpacity 
 import React, { useEffect, useState } from 'react'
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
-import { ChevronLeftIcon, ClockIcon } from 'react-native-heroicons/outline';
-import { HeartIcon } from 'react-native-heroicons/solid';
+import { ChevronLeftIcon, ClockIcon, FireIcon } from 'react-native-heroicons/outline';
+import { HeartIcon, Square3Stack3DIcon, UsersIcon } from 'react-native-heroicons/solid';
 import axios from 'axios';
 import Loading from '@/src/components/loading';
-
+import YoutubeIframe from 'react-native-youtube-iframe'
+import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
 
 const RecipeDetails = () => {
   const params = useLocalSearchParams(); // Get the passed recipe data
@@ -24,7 +25,7 @@ const RecipeDetails = () => {
     try {
 
       const response = await axios.get(`https://themealdb.com/api/json/v1/1/lookup.php?i=${id}`);
-      console.log('got meal data:', response.data);
+      // console.log('got meal data:', response.data);
 
       if (response && response.data) {
         setMeal(response.data.meals[0]);
@@ -36,6 +37,26 @@ const RecipeDetails = () => {
     }
   }
 
+  const ingredientsIndexes = (meal) => {
+    if (!meal) return [];
+    let indexes = [];
+    for (let i = 1; i <= 20; i++)
+      if (meal[`strIngredient${i}`] && meal[`strIngredient${i}`].trim() !== "") {
+        indexes.push(i);
+      }
+
+    return indexes
+  }
+
+  const getYoutubeVideoId = url=>{
+    const regex = /[?&]v=([^&]+)/;
+    const match = url.match(regex);
+    if (match && match[1]) {
+      return match[1]
+    }
+    return null;
+  }
+
   return (
     <ScrollView
       style={styles.recipeDetailsContainer}
@@ -45,18 +66,21 @@ const RecipeDetails = () => {
       <StatusBar barStyle={"light-content"} />
       {/* recipe image */}
       <View style={styles.recipeContainer}>
-        <Image style={styles.imageContainer} source={{ uri: params.strMealThumb }} />
+        <Image style={styles.imageContainer} source={{ uri: params.strMealThumb }}
+        />
       </View>
 
+      {/* sharedTransitionTag={params.strMeal} */}
+
       {/* backbutton */}
-      <View style={styles.backButtonContainer}>
+      <Animated.View entering={FadeIn.delay(200).duration(1000)} style={styles.backButtonContainer}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButtonBackground}>
           <ChevronLeftIcon size={hp(4.5)} strokeWidth={3.5} color="#fbbf24" />
         </TouchableOpacity>
         <TouchableOpacity onPress={() => setIsFavourite(!isFavourite)} style={styles.heartButtonBackground}>
           <HeartIcon size={hp(4.5)} strokeWidth={3.5} color={isFavourite ? "red" : "grey"} />
         </TouchableOpacity>
-      </View>
+      </Animated.View>
 
       {/* meal description */}
       {
@@ -65,24 +89,129 @@ const RecipeDetails = () => {
         ) : (
           <View style={styles.nameAndAreaData}>
             {/* name and area */}
-            <View style={styles.mealTitle}>
+            <Animated.View entering={FadeInDown.duration(700).springify().damping(12)} style={styles.mealTitle}>
               <Text style={styles.mealTitleText}>
                 {meal?.strMeal}
               </Text>
               <Text style={styles.mealTitleSubText}>
                 {meal?.strArea}
               </Text>
-            </View>
+            </Animated.View>
 
             {/* misc */}
-            <View style={styles.miscContainer}>
+            <Animated.View entering={FadeInDown.delay(100).duration(700).springify().damping(12)} style={styles.miscContainer}>
+
+              {/* time */}
               <View style={styles.miscSecondContainer}>
                 <View style={styles.miscLastContainer}>
                   <ClockIcon size={hp(4)} strokeWidth={2.5} color="#525252" />
                 </View>
+                <View style={styles.timeTextContainer}>
+                  <Text style={styles.timeTextNumber}>
+                    35
+                  </Text >
+                  <Text style={styles.timeTextletter}>
+                    min
+                  </Text>
+                </View>
               </View>
-            </View>
 
+              {/* users */}
+              <View style={styles.miscSecondContainer}>
+                <View style={styles.miscLastContainer}>
+                  <UsersIcon size={hp(4)} strokeWidth={2.5} color="#525252" />
+                </View>
+                <View style={styles.timeTextContainer}>
+                  <Text style={styles.timeTextNumber}>
+                    03
+                  </Text >
+                  <Text style={styles.timeTextletter}>
+                    Servings
+                  </Text>
+                </View>
+              </View>
+
+              {/* fire */}
+              <View style={styles.miscSecondContainer}>
+                <View style={styles.miscLastContainer}>
+                  <FireIcon size={hp(4)} strokeWidth={2.5} color="#525252" />
+                </View>
+                <View style={styles.timeTextContainer}>
+                  <Text style={styles.timeTextNumber}>
+                    103
+                  </Text >
+                  <Text style={styles.timeTextletter}>
+                    cal
+                  </Text>
+                </View>
+              </View>
+
+              {/* stack */}
+              <View style={styles.miscSecondContainer}>
+                <View style={styles.miscLastContainer}>
+                  <Square3Stack3DIcon size={hp(4)} strokeWidth={2.5} color="#525252" />
+                </View>
+                <View style={styles.timeTextContainer}>
+                  <Text style={styles.timeTextNumber}>
+
+                  </Text >
+                  <Text style={styles.timeTextletter}>
+                    Easy
+                  </Text>
+                </View>
+              </View>
+            </Animated.View>
+
+            {/* ingredients */}
+            <Animated.View entering={FadeInDown.delay(200).duration(700).springify().damping(12)} style={styles.mainIngredientContainer}>
+              <Text style={styles.IngredientMainText}>
+                Ingredients
+              </Text>
+              <View>
+                {
+                  ingredientsIndexes(meal).map(i => {
+                    return (
+                      <View key={i} style={styles.indexesMainContainer} >
+                        <View style={styles.indexesContainer} />
+                        <View style={styles.ingredientPoints}>
+                          <Text style={styles.ingredientPointsOne}>{meal['strMeasure' + i]}</Text>
+                          <Text style={styles.ingredientPointsTwo}>{meal['strIngredient' + i]}</Text>
+                        </View>
+
+                      </View>
+                    )
+                  })
+                }
+              </View>
+            </Animated.View>
+
+            {/* Instruction */}
+            <Animated.View entering={FadeInDown.delay(300).duration(700).springify().damping(12)} style={styles.mainIngredientContainer}>
+              <Text style={styles.IngredientMainText}>
+                Instructions
+              </Text>
+              <Text style={styles.instructionsPara}>
+                {
+                  meal?.strInstructions
+                }
+              </Text>
+            </Animated.View>
+
+            {/* recipe video */}
+            {
+              meal.strYoutube && (
+                <Animated.View entering={FadeInDown.delay(400).duration(700).springify().damping(12)}>
+                  <Text style={styles.IngredientMainText}>
+                    Recipe Video
+                  </Text>
+                  <View>
+                    <YoutubeIframe 
+                    videoId={getYoutubeVideoId(meal.strYoutube)}
+                    height={hp(30)} />
+                  </View>
+                </Animated.View>
+              )
+            }
           </View>
         )
       }
@@ -158,22 +287,81 @@ const styles = StyleSheet.create({
     flex: 1,
     color: "#737373",
   },
-  miscContainer:{
-    flexDirection:"row",
+  miscContainer: {
+    flexDirection: "row",
     justifyContent: "space-around",
   },
-  miscSecondContainer:{
-    flex: 1,
+  miscSecondContainer: {
     borderRadius: 9999,
     backgroundColor: "#fcd34d",
     padding: 8,
   },
-  miscLastContainer:{
-    height:hp(6.5),
-    width:hp(6.5),
+  miscLastContainer: {
+    height: hp(6.5),
+    width: hp(6.5),
     borderRadius: 9999,
-    backgroundColor:"white",
-    alignItems:"center",
-    justifyContent:"center"
+    backgroundColor: "white",
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  timeTextContainer: {
+    alignItems: "center",
+    paddingVertical: 8,
+    marginBottom: 4
+  },
+  timeTextNumber: {
+    fontSize: hp(2),
+    fontWeight: "bold",
+    color: "#404040",
+
+  },
+  timeTextletter: {
+    fontSize: hp(1.3),
+    fontWeight: "bold",
+    color: "#404040",
+
+  },
+  mainIngredientContainer: {
+    marginBottom: 16,
+  },
+  IngredientMainText: {
+    marginTop: 10,
+    marginBottom: 10,
+    fontSize: hp(2.5),
+    fontWeight: "bold",
+    color: "#404040",
+  },
+  IngredientParaText: {
+    marginLeft: 3,
+    marginBottom: 8,
+  },
+  indexesMainContainer: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 8,
+  },
+  indexesContainer: {
+    height: hp(1.5),
+    width: hp(1.5),
+    backgroundColor: "#fcd34d",
+    borderRadius: 9999,
+  },
+  ingredientPoints: {
+    flexDirection: "row",
+    gap: 4,
+  },
+  ingredientPointsOne: {
+    fontWeight: "900",
+    color: "#525252",
+    fontSize: hp(1.7)
+  },
+  ingredientPointsTwo: {
+    fontWeight: "500",
+    color: "#525252",
+    fontSize: hp(1.7)
+  },
+  instructionsPara: {
+    fontSize: hp(1.6),
+    color: "#404040",
   }
 })
