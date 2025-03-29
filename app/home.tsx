@@ -9,7 +9,7 @@ import Recipes from '@/src/components/recipes';
 const home = () => {
 
     const[activeCategory, setActiveCategory] = useState('Beef')
-    const [categories,setCategores] = useState([])
+    const [categories,setCategories] = useState([])
     const [meals, setMeals] = useState([])
 
     useEffect(()=>{
@@ -30,7 +30,7 @@ const home = () => {
             // console.log('got categories:', response.data);
             
             if (response && response.data) {
-                setCategores(response.data.categories)
+                setCategories(response.data.categories)
             }
         } catch (error) {
             console.log('error');
