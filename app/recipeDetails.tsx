@@ -8,6 +8,7 @@ import axios from 'axios';
 import Loading from '@/src/components/loading';
 import YoutubeIframe from 'react-native-youtube-iframe'
 import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
+import localData from '@/assets/data/data.json'; 
 
 const RecipeDetails = () => {
   const params = useLocalSearchParams(); // Get the passed recipe data
@@ -23,17 +24,18 @@ const RecipeDetails = () => {
 
   const getMealData = async (id) => {
     try {
-
       const response = await axios.get(`https://themealdb.com/api/json/v1/1/lookup.php?i=${id}`);
-      // console.log('got meal data:', response.data);
-
-      if (response && response.data) {
-        setMeal(response.data.meals[0]);
-        setLoading(false)
+      if (response?.data?.meals) {
+        const apiMeal = response.data.meals[0];
+        // Find matching local data
+        const localMeal = localData.find(item => item.id === id) || {};
+        // Merge API and local data
+        setMeal({ ...apiMeal, ...localMeal });
       }
+      setLoading(false);
     } catch (error) {
-      console.log('error', err.message);
-
+      console.log('error:', error.message);
+      setLoading(false);
     }
   }
 
@@ -107,12 +109,8 @@ const RecipeDetails = () => {
                   <ClockIcon size={hp(4)} strokeWidth={2.5} color="#525252" />
                 </View>
                 <View style={styles.timeTextContainer}>
-                  <Text style={styles.timeTextNumber}>
-                    35
-                  </Text >
-                  <Text style={styles.timeTextletter}>
-                    min
-                  </Text>
+                <Text style={styles.timeTextNumber}>{meal?.time || 35}</Text>
+                <Text style={styles.timeTextletter}>mins</Text>
                 </View>
               </View>
 
@@ -122,12 +120,8 @@ const RecipeDetails = () => {
                   <UsersIcon size={hp(4)} strokeWidth={2.5} color="#525252" />
                 </View>
                 <View style={styles.timeTextContainer}>
-                  <Text style={styles.timeTextNumber}>
-                    03
-                  </Text >
-                  <Text style={styles.timeTextletter}>
-                    Servings
-                  </Text>
+                <Text style={styles.timeTextNumber}>{meal?.servings || 3}</Text>
+                <Text style={styles.timeTextletter}>Servings</Text>
                 </View>
               </View>
 
@@ -137,12 +131,8 @@ const RecipeDetails = () => {
                   <FireIcon size={hp(4)} strokeWidth={2.5} color="#525252" />
                 </View>
                 <View style={styles.timeTextContainer}>
-                  <Text style={styles.timeTextNumber}>
-                    103
-                  </Text >
-                  <Text style={styles.timeTextletter}>
-                    cal
-                  </Text>
+                <Text style={styles.timeTextNumber}>{meal?.calories || 200}</Text>
+                <Text style={styles.timeTextletter}>cal</Text>
                 </View>
               </View>
 
@@ -155,9 +145,7 @@ const RecipeDetails = () => {
                   <Text style={styles.timeTextNumber}>
 
                   </Text >
-                  <Text style={styles.timeTextletter}>
-                    Easy
-                  </Text>
+                  <Text style={styles.timeTextletter}>{meal?.level || "Easy"}</Text>
                 </View>
               </View>
             </Animated.View>
